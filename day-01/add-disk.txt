@@ -1,0 +1,25 @@
+
+
+
+ - configure-filesystem
+root
+	mkfs.ext4 /dev/sdb
+
+
+ - mount-partition
+root
+	mkdir /pg_data
+	mount /dev/sdb /pg_data
+
+
+
+
+-fstab dosyasına ekleme
+
+root
+	blkid
+	UUID="bcc44a7a-7e19-47f4-a8ec-5d4abccd75df"
+	
+root
+	vim /etc/fstab
+		UUID=bcc44a7a-7e19-47f4-a8ec-5d4abccd75df   /pg_data   ext4   defaults   0   0

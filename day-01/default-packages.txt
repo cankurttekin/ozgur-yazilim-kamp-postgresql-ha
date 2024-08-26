@@ -1,0 +1,48 @@
+default_packages:
+  - sudo
+  - vim
+  - bash-completion
+  - ca-certificates
+  - cloud-utils
+  - rsync
+  - parted
+  - telnet
+  - libjson-perl
+  - python3-psycopg2
+  - python3-apt
+  - python3-pip
+  - python3-netaddr
+  - apt-transport-https
+  - lsof
+  - fio
+  - gpg
+  - locales
+  - sysstat
+  - iotop
+  - iftop
+  - net-tools
+  - unzip
+  - zip
+  - man
+  - psmisc
+  - curl
+  - parallel
+  - atop
+  - tmux
+  - jq
+  - tcpdump
+  - hping3
+  - acl
+  - tuned-utils
+  - tuned
+  - ssl-cert
+  - fdisk
+  - strace
+  - htop
+
+
+-- Apt ile yükleme komutu:
+
+apt install sudo vim bash-completion ca-certificates cloud-utils rsync parted telnet libjson-perl python3-psycopg2 python3-apt python3-pip python3-netaddr \
+apt-transport-https lsof fio gpg locales sysstat iotop iftop net-tools unzip zip man psmisc curl parallel atop tmux jq tcpdump hping3 acl tuned-utils tuned \
+ssl-cert fdisk strace htop -y

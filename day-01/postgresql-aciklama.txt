@@ -1,0 +1,11 @@
+PostgreSQL, güçlü ve açık kaynaklı bir ilişkisel veritabanı yönetim sistemi (RDBMS) olup, veri saklama ve yönetim görevlerini yerine getirir. SQL (Structured Query Language) diliyle etkileşime geçilen PostgreSQL, aynı zamanda NoSQL özellikleri de sunarak geniş bir esneklik sağlar.
+
+PostgreSQL’in temel özellikleri arasında:
+
+ACID Uyumlu: Veri bütünlüğünü koruyan atomicity (atomiklik), consistency (tutarlılık), isolation (izolasyon), ve durability (kalıcılık) prensiplerine uygun çalışır.
+Genişletilebilirlik: Yeni veri türleri, fonksiyonlar ve operatörler eklemeye olanak sağlar.
+JSON ve XML Desteği: Hem yapılandırılmış (SQL) hem de yapılandırılmamış (NoSQL) verilerle çalışabilir. JSON ve XML desteği sayesinde modern veri işleme ihtiyaçlarını karşılar.
+Replikasyon ve Yük Dengeleme: Yüksek kullanılabilirlik sağlamak için asenkron veya senkron replikasyon yapabilir ve yük dengeleme ile veritabanı performansını optimize edebilir.
+Güvenlik Özellikleri: Kullanıcı doğrulama, SSL, yetkilendirme gibi güvenlik önlemleri sunar.
+Açık Kaynak: PostgreSQL, büyük bir topluluk tarafından geliştirilen ücretsiz ve açık kaynaklı bir yazılımdır. Bu da, geniş bir kullanıcı ve geliştirici desteği sağlar.
+PostgreSQL, yüksek performans, veri güvenliği ve geniş özellik yelpazesi sunmasıyla hem küçük projeler hem de büyük kurumsal uygulamalar için tercih edilen bir veritabanı sistemidir.

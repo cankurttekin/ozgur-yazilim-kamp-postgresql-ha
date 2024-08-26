@@ -1,0 +1,22 @@
+--Netwroku konfigüre etmek için:
+
+root
+	nano /etc/network/interfaces
+
+		auto enp0s8
+		iface enp0s8 inet dhcp
+
+
+	sudo systemctl restart networking
+
+
+-------------------------------
+-- Hostname'i değiştirmek için:
+
+root
+	hostnamectl set-hostname pgdb01
+
+
+	nano /etc/hosts
+		debian --> pgdb01
+
