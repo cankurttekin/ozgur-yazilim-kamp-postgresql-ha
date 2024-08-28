@@ -1,0 +1,55 @@
+
+-Publication oluşturmak
+
+postgres
+	pgdb01
+		psql
+			--publication için bir user oluşturmak ve bu user'ın replication yetkisinin olması.
+			create role pub_user password '1234' login replication;
+			\c lkd_test
+			set session authorization pub_user;
+			--tek bir tabloda oluşturmak için
+			CREATE PUBLICATION lkd_pub FOR TABLE public.lkd_table;
+
+			----birden fazla tabloda oluşturmak için
+			CREATE PUBLICATION my_publication FOR TABLE table1, table2, table3;
+
+
+			--Publication oluştururken belirli işlemleri alıp istemediklerimizi almamak için.
+			CREATE PUBLICATION my_publication FOR TABLE table1, table2, table3 
+			WITH (publish = 'insert, update');
+				- Eğer table1,table2,table3 tablosuna bir INSERT yapılırsa, bu işlem subscriber sunucuya iletilir.
+				- Eğer table1,table2,table3 tablosuna bir UPDATE yapılırsa, bu işlem de subscriber sunucuya iletilir.
+				- Ancak table1,table2,table3 tablosunda bir DELETE yapılırsa, bu işlem subscriber'a iletilmez.
+
+			--logical replication için slot oluşturmak
+			select pg_create_logical_replication_slot('logical_slot','pgoutput');
+
+			--eğer gerekirse slotu drop etmek için
+			select pg_drop_replication_slot('logical_slot');
+
+
+			--kontrol için gerekli sorgular
+			select * from pg_publication;
+			select * from pg_publication_tables;
+
+
+
+-Subscription oluşturmak
+
+postgres
+	pgdb02 (5433 portundaki cluster psql -p 5433 diyerek bağlanabilirsiniz. Eğer oluşturmadıysanız pg_createcluster 16 lkd_logical -D /pg_data/16/lkd_logical komutu ile oluşturulabilir.)
+		psql
+			create database lkd_test_2;
+			\c lkd_test
+			create table lkd_table (a serial primary key,b text);
+			--publish ettiğim tablo için subscription oluşturma.
+			CREATE SUBSCRIPTION logical_sub
+			CONNECTION 'host=192.168.56.104 dbname=lkd_test user=pub_user password=1234' 
+			PUBLICATION lkd_pub
+			WITH (slot_name = 'manuel_slot_adi', create_slot = false);
+
+			--kontrol için gerekli sorgular
+			select * from pg_subscription;
+			select * from pg_stat_subscription;
+			select * from pg_stat_subscription_stats;

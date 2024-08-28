@@ -1,0 +1,28 @@
+postgres
+	pgbackup
+		pgbackrest --stanza=pg16_lkd stanza-create  #stanza oluşturmak için gerekli komut.
+		pgbackrest info #mevcut stanzaların durumlarını kontrol etmek için gerekli komut.Backuplar ilk/son wal dosyaları hangi tarihler için restore yapabilirim gibi bilgileri buradan kontrol ediyoruz.
+
+
+
+
+
+--restore command (restore işleminin yapılacağı sunucuda çalıştırılır.)
+postgres
+		pgbackrest \
+		--stanza=pg16_lkd \
+		--log-level-console=info \
+		--db-path=/pg_data/16/lkd_restore \
+		--type=time \
+		--target="2024-08-26 16:50:20.000000+00" \
+		--target-action=pause restore
+
+
+--backup üzerinden replika kaldırmak için gerekli restore command
+postgres
+	/usr/bin/pgbackrest --stanza=pg16_lkd --type=standby restore
+	
+
+--backup dosyası yetkileri ve sahipliği
+root@pgbackup:~# chown postgres: /pg_backup/
+root@pgbackup:~# chmod 700 /pg_backup

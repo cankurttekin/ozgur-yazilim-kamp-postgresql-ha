@@ -1,0 +1,35 @@
+postgres
+	pgdb01
+		psql
+			select pg_create_physical_replication_slot('standby_slot',true);
+
+
+
+postgres
+	pgdb02
+		pg_basebackup \
+		--host=192.168.56.104 \ #primary-ip
+		--pgdata=/pg_data/16/lkd \ #replica-data-path
+		--username=standby \ #replication-icin-kullanilacak-user
+		--verbose --progress \
+		--wal-method=stream \
+		--write-recovery-conf \
+		--checkpoint=fast \
+		--slot=standby_slot #replication-icin-kullanılacak-slot-ismi
+
+
+	Basebackup tamamlandıktan sonra
+root
+	pgdb02
+		systemctl start postgresql@16-lkd.service
+		
+	Kontrol için 
+postgres
+	pgdb01
+		psql
+			select * from pg_replication_slots;
+			select * from pg_stat_replication;
+	
+
+#slotu basebackup komutuna create ettirmek istersek.
+--create-slot

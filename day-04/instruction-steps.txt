@@ -1,0 +1,241 @@
+----------------------------- Preperation ----------------------------
+
+
+apt update
+apt upgrade
+
+  vim /etc/hosts
+	192.168.56.108	pgdb01
+	192.168.56.107	pgdb02
+	192.168.56.109	pgdb03
+
+
+  
+  vim /etc/profile.d/color_prompt.sh
+    ...
+
+
+apt install sudo vim bash-completion ca-certificates cloud-utils rsync parted telnet libjson-perl python3-psycopg2 python3-apt python3-pip python3-netaddr apt-transport-https \
+lsof fio gpg locales sysstat iotop iftop net-tools unzip zip man psmisc curl parallel atop tmux jq tcpdump hping3 acl tuned-utils tuned ssl-cert fdisk strace htop wget screen -y
+
+
+
+----------------------------- Disable Transparent Huge Pages ----------------------------
+
+Disable Transparent Huge Pages
+
+vim /etc/systemd/system/disable-thp.service
+
+--------------------------------
+[Unit]
+Description=Disable Transparent Huge Pages (THP)
+DefaultDependencies=no
+After=sysinit.target local-fs.target
+[Service]
+Type=simple
+ExecStart=/bin/sh -c 'echo never | tee /sys/kernel/mm/transparent_hugepage/enabled > /dev/null'
+[Install]
+WantedBy=multi-user.target
+------------------------------------------
+
+
+chmod 0644 /etc/systemd/system/disable-thp.service
+    
+systemctl daemon-reload    
+systemctl enable disable-thp.service
+systemctl start disable-thp.service
+systemctl status disable-thp.service
+
+----------------------------- consul -----------------------------  
+
+pgdb01,pgdb02,pgdb03
+  root
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/consul-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+      > /etc/apt/sources.list.d/consul.list
+    
+    wget --quiet -O - https://apt.releases.hashicorp.com/gpg | \
+      gpg --dearmor > /usr/share/keyrings/consul-archive-keyring.gpg
+    
+    apt update
+    apt install consul
+	
+	--Raft consensus sistemi : https://raft.github.io/
+ 
+---------------------------------
+-- Consul data dizininin oluşturulması 
+    mkdir /var/lib/consul
+    chown consul:consul /var/lib/consul
+    chmod 700 /var/lib/consul
+
+-- Consul log dizininin oluşturulması
+    mkdir /var/log/consul/
+    chown consul:consul /var/log/consul
+    chmod 755 /var/log/consul
+
+-- Consul versiyonunun sabitlenmesi
+    apt-mark hold consul
+    apt-mark showhold
+
+------------------------------
+
+    consul keygen
+ttfx92hwR5/qkvig1WFB24SHle4LC0Ew8dJZwZ3ZJas=
+
+
+vim /etc/consul.d/consul.json
+      ...
+    chown consul: /etc/consul.d/consul.json
+    chmod 600 /etc/consul.d/consul.json
+
+    consul validate /etc/consul.d/
+
+
+
+    vim /etc/profile.d/consul.sh
+export CONSUL_HTTP_TOKEN_FILE=/etc/consul.d/consul_http_token
+complete -C /usr/bin/consul consul
+    
+    chmod 0644 /etc/profile.d/consul.sh
+    
+    vim /etc/consul.d/consul_http_token
+      080055ee-7b81-47e6-a553-14230900dd5a
+      
+    chown consul: /etc/consul.d/consul_http_token
+    chmod 600 /etc/consul.d/consul_http_token
+    
+	systemctl enable consul.service
+    systemctl start consul.service
+    systemctl status consul.service
+	
+	
+    consul members
+    consul operator raft list-peers
+    
+	
+	
+	
+	
+    CONSUL_HTTP_TOKEN=080055ee-7b81-47e6-a553-14230900dd5a consul members   
+	
+----------------------------- postgresql -----------------------------
+pgdb01,pgdb02,pgdb03
+  root (sudo su - )
+  
+    localectl list-locales
+    vim /etc/locale.gen
+      tr_TR.UTF-8 UTF-8
+      
+    locale-gen  
+  
+
+-----------------------------  
+	www.postgresql.org
+
+    apt install postgresql-16
+----------------------------------
+    
+    mkdir -p /pg_data/16/lkd
+    chown -R postgres: /pg_data
+    chmod 700 -R /pg_data
+    
+    systemctl stop postgresql
+    systemctl disable postgresql
+    
+    
+ postgres (sudo su - postgres)
+   vim /var/lib/postgresql/.bash_profile
+     export PGDATA=/pg_data/16/lkd
+     export PATH=$PATH:/usr/lib/postgresql/16/bin    
+
+-- soft ve hard nofile limitleri
+root
+	vim /etc/security/limits.d/postgresql.conf
+		postgres        soft    nofile          262144
+		root            soft    nofile          262144
+		postgres        hard    nofile          262144
+		root            hard    nofile          262144  
+
+--------------------------------------------------
+
+----------------------------- patroni -----------------------------
+  root
+    apt install python3-venv
+  
+  postgres 
+    mkdir .pypgenv
+    chmod 700 .pypgenv
+    python3.11 -m venv .pypgenv/
+    
+    source .pypgenv/bin/activate
+      pip install setuptools
+      pip install psycopg-binary
+      pip install psycopg2-binary
+      pip install patroni[consul]
+      pip install pg_activity
+	  pip install cdiff ydiff
+      deactivate
+
+
+  root
+    vim /etc/profile.d/patroni.sh
+      export PATRONICTL_CONFIG_FILE=/etc/patroni/patroni.yml
+      
+# patroni.service dosyasının oluşturulması
+  root
+    vim /etc/systemd/system/patroni.service
+  ...
+
+# patroni.service dosyasının yetkilerinin verilmesi.
+	chmod 0755 /etc/systemd/system/patroni.service
+  
+# patroni ile ilgili klasör ve dosyaların oluşturulması.
+  root
+    mkdir /etc/patroni
+    chown postgres: /etc/patroni/
+    chmod 0700 /etc/patroni/
+    
+    touch /etc/patroni/env.conf
+    chown postgres: /etc/patroni/env.conf
+    chmod 0600 /etc/patroni/env.conf
+    
+    mkdir /var/log/patroni
+    chown postgres: /var/log/patroni/
+    chmod 0700 /var/log/patroni/  
+ 
+ 
+    vim /var/lib/postgresql/.bash_profile
+      export PGDATA=/pg_data/16/lkd
+      export PATH=/var/lib/postgresql/.pypgenv/bin:$PATH
+
+    chown postgres: /var/lib/postgresql/.bash_profile
+    chmod 0644 /var/lib/postgresql/.bash_profile 
+
+
+
+
+# patroni.yml dosyasının oluşturulması
+	vim /etc/patroni/patroni.yml
+  ...
+
+# patroni.yml dosyasının yetkileri ve sahipliği
+	chown postgres: /etc/patroni/patroni.yml
+	chmod 0600 /etc/patroni/patroni.yml  
+
+-----------------------------------------------
+
+  ### Sunucular Arası SSH tanımlanıyor postgres to postgres 
+
+  postgres
+    ssh-keygen -t rsa -b 4096
+    cat .ssh/id_rsa.pub
+    vim .ssh/authorized_keys
+    chmod 600 .ssh/authorized_keys
+    
+  NOT: makinalar arasında ssh atıp known_hosts dosyasına yazması sağlanmalı.
+  
+# patroni.service enable and start
+root	
+	systemctl daemon-reload
+	systemctl enable patroni.service
+	systemctl start patroni.service
+	systemctl status patroni.service
