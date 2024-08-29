@@ -1,0 +1,36 @@
+1- patroninin maintenance moduna alınması (pause)
+	postgres
+		┌── 2024-08-29 00:40:32 postgres@pgdb01 ── ~ ─
+		└─$ patronictl pause
+		Success: cluster management is paused
+		
+		┌── 2024-08-29 00:42:01 postgres@pgdb01 ── ~ ─
+		└─$ patronictl list
+		+ Cluster: pg16-lkd (7408103650069097159) ------+----+-----------+
+		| Member | Host           | Role    | State     | TL | Lag in MB |
+		+--------+----------------+---------+-----------+----+-----------+
+		| pgdb01 | 192.168.56.108 | Replica | streaming |  9 |         0 |
+		| pgdb02 | 192.168.56.107 | Replica | streaming |  9 |         0 |
+		| pgdb03 | 192.168.56.109 | Leader  | running   |  9 |           |
+		+--------+----------------+---------+-----------+----+-----------+
+		Maintenance mode: on
+
+*** Patroni maintenance modunda iken primary (lider) sunucu kapatılsa bile replikalardan biri promote edilmez.
+switchover işlemi için maintenance mode'un kapatılması gerekir.
+
+
+2- maintenance modundan çıkmak için
+	postgres
+		┌── 2024-08-29 00:42:07 postgres@pgdb01 ── ~ ─
+		└─$ patronictl resume
+		Success: cluster management is resumed
+		
+		┌── 2024-08-29 00:45:12 postgres@pgdb01 ── ~ ─
+		└─$ patronictl list
+		+ Cluster: pg16-lkd (7408103650069097159) ------+----+-----------+
+		| Member | Host           | Role    | State     | TL | Lag in MB |
+		+--------+----------------+---------+-----------+----+-----------+
+		| pgdb01 | 192.168.56.108 | Replica | streaming |  9 |         0 |
+		| pgdb02 | 192.168.56.107 | Replica | streaming |  9 |         0 |
+		| pgdb03 | 192.168.56.109 | Leader  | running   |  9 |           |
+		+--------+----------------+---------+-----------+----+-----------+

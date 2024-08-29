@@ -1,0 +1,36 @@
+1- patroni reinit (datayı sıfırdan eşitleme - basebackup)
+
+	postgres
+		┌── 2024-08-29 00:35:33 postgres@pgdb01 ── ~ ─
+		└─$ patronictl list
+		+ Cluster: pg16-lkd (7408103650069097159) ------+----+-----------+
+		| Member | Host           | Role    | State     | TL | Lag in MB |
+		+--------+----------------+---------+-----------+----+-----------+
+		| pgdb01 | 192.168.56.108 | Replica | streaming |  9 |         0 |
+		| pgdb02 | 192.168.56.107 | Replica | streaming |  9 |         0 |
+		| pgdb03 | 192.168.56.109 | Leader  | running   |  9 |           |
+		+--------+----------------+---------+-----------+----+-----------+
+
+		┌── 2024-08-29 00:37:43 postgres@pgdb01 ── ~ ─
+		└─$ patronictl reinit pg16-lkd
+		+ Cluster: pg16-lkd (7408103650069097159) ------+----+-----------+
+		| Member | Host           | Role    | State     | TL | Lag in MB |
+		+--------+----------------+---------+-----------+----+-----------+
+		| pgdb01 | 192.168.56.108 | Replica | streaming |  9 |         0 |
+		| pgdb02 | 192.168.56.107 | Replica | streaming |  9 |         0 |
+		| pgdb03 | 192.168.56.109 | Leader  | running   |  9 |           |
+		+--------+----------------+---------+-----------+----+-----------+
+		Which member do you want to reinitialize [pgdb01, pgdb02]? []: pgdb02
+		Are you sure you want to reinitialize members pgdb02? [y/N]: y
+		Success: reinitialize for member pgdb02
+		
+
+		┌── 2024-08-29 00:39:57 postgres@pgdb01 ── ~ ─
+		└─$ patronictl list
+		+ Cluster: pg16-lkd (7408103650069097159) ------+----+-----------+
+		| Member | Host           | Role    | State     | TL | Lag in MB |
+		+--------+----------------+---------+-----------+----+-----------+
+		| pgdb01 | 192.168.56.108 | Replica | streaming |  9 |         0 |
+		| pgdb02 | 192.168.56.107 | Replica | streaming |  9 |         0 |
+		| pgdb03 | 192.168.56.109 | Leader  | running   |  9 |           |
+		+--------+----------------+---------+-----------+----+-----------+

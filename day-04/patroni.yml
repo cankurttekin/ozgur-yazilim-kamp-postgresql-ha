@@ -24,12 +24,12 @@ bootstrap:
         autovacuum_analyze_threshold: 1000
         autovacuum_vacuum_scale_factor: 0.002
         autovacuum_vacuum_threshold: 3000
-        autovacuum_work_mem : '256MB'
+        autovacuum_work_mem : '16MB'
         bgwriter_delay : '50ms'
         bgwriter_lru_multiplier: '4'
         checkpoint_completion_target: '0.8'
         checkpoint_timeout : '10min'
-        effective_cache_size : '12GB'
+        effective_cache_size : '64MB'
         effective_io_concurrency : '1'
         lc_messages: 'C'
         log_autovacuum_min_duration: '0'
@@ -43,12 +43,12 @@ bootstrap:
         log_temp_files: '0'
         log_truncate_on_rotation: 'on'
         logging_collector: 'on'
-        maintenance_work_mem : '1GB'
+        maintenance_work_mem : '64MB'
         max_connections : '1000'
         max_wal_size : '4GB'
         password_encryption : 'scram-sha-256'
         random_page_cost : '1.1'
-        shared_buffers : '4GB'
+        shared_buffers : '1GB'
         shared_preload_libraries: pg_stat_statements
         temp_buffers : '8MB'
         temp_file_limit : '-1'
@@ -59,21 +59,21 @@ bootstrap:
         - local all             postgres                            peer
         - host  all             all             127.0.0.1/32      scram-sha-256
         - host  replication     standby         127.0.0.1/32      scram-sha-256
-        - host  replication     standby         192.168.0.32/32   scram-sha-256
-        - host  replication     standby         192.168.0.33/32   scram-sha-256
-        - host  replication     standby         192.168.0.34/32   scram-sha-256
+        - host  replication     standby         192.168.56.107/32   scram-sha-256
+        - host  replication     standby         192.168.56.108/32   scram-sha-256
+        - host  replication     standby         192.168.56.109/32   scram-sha-256
         - host  postgres        standby         127.0.0.1/32      scram-sha-256
-        - host  postgres        standby         192.168.0.32/32   scram-sha-256
-        - host  postgres        standby         192.168.0.33/32   scram-sha-256
-        - host  postgres        standby         192.168.0.34/32   scram-sha-256
-        - host  all             postgres        192.168.0.32/32   scram-sha-256
-        - host  all             postgres        192.168.0.33/32   scram-sha-256
-        - host  all             postgres        192.168.0.34/32   scram-sha-256
-        - host  all             +dba            0.0.0.0/0         scram-sha-256
+        - host  postgres        standby         192.168.56.107/32   scram-sha-256
+        - host  postgres        standby         192.168.56.108/32   scram-sha-256
+        - host  postgres        standby         192.168.56.109/32   scram-sha-256
+        - host  all             postgres        192.168.56.107/32   scram-sha-256
+        - host  all             postgres        192.168.56.108/32   scram-sha-256
+        - host  all             postgres        192.168.56.109/32   scram-sha-256
+
         
 consul:
   host: 127.0.0.1:8500
-  token: 88387dea-2654-4463-b6bc-8e9e222488a5
+  token: af0b6df5-8a91-459a-adbe-75002206c4a7
   dc: lkd
   register_service: true
 

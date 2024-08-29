@@ -1,0 +1,47 @@
+1 - patroni switchover (lider sunucuyu değiştirme)
+	postgres
+		┌── 2024-08-29 00:33:25 postgres@pgdb01 ── ~ ─
+		└─$ patronictl list
+		+ Cluster: pg16-lkd (7408103650069097159) ------+----+-----------+
+		| Member | Host           | Role    | State     | TL | Lag in MB |
+		+--------+----------------+---------+-----------+----+-----------+
+		| pgdb01 | 192.168.56.108 | Leader  | running   |  8 |           |
+		| pgdb02 | 192.168.56.107 | Replica | streaming |  8 |         0 |
+		| pgdb03 | 192.168.56.109 | Replica | streaming |  8 |         0 |
+		+--------+----------------+---------+-----------+----+-----------+
+
+
+		┌── 2024-08-29 00:33:27 postgres@pgdb01 ── ~ ─
+		└─$ patronictl switchover pg16-lkd
+		Current cluster topology
+		+ Cluster: pg16-lkd (7408103650069097159) ------+----+-----------+
+		| Member | Host           | Role    | State     | TL | Lag in MB |
+		+--------+----------------+---------+-----------+----+-----------+
+		| pgdb01 | 192.168.56.108 | Leader  | running   |  8 |           |
+		| pgdb02 | 192.168.56.107 | Replica | streaming |  8 |         0 |
+		| pgdb03 | 192.168.56.109 | Replica | streaming |  8 |         0 |
+		+--------+----------------+---------+-----------+----+-----------+
+		Primary [pgdb01]: pgdb01
+		Candidate ['pgdb02', 'pgdb03'] []: pgdb03
+		When should the switchover take place (e.g. 2024-08-29T01:34 )  [now]:now
+		Are you sure you want to switchover cluster pg16-lkd, demoting current leader pgdb01? [y/N]: y
+		2024-08-29 00:34:34.48951 Successfully switched over to "pgdb03"
+		+ Cluster: pg16-lkd (7408103650069097159) ------+----+-----------+
+		| Member | Host           | Role    | State     | TL | Lag in MB |
+		+--------+----------------+---------+-----------+----+-----------+
+		| pgdb01 | 192.168.56.108 | Replica | stopped   |    |   unknown |
+		| pgdb02 | 192.168.56.107 | Replica | streaming |  8 |         0 |
+		| pgdb03 | 192.168.56.109 | Leader  | running   |  8 |           |
+		+--------+----------------+---------+-----------+----+-----------+
+
+
+
+		┌── 2024-08-29 00:34:34 postgres@pgdb01 ── ~ ─
+		└─$ patronictl list
+		+ Cluster: pg16-lkd (7408103650069097159) ------+----+-----------+
+		| Member | Host           | Role    | State     | TL | Lag in MB |
+		+--------+----------------+---------+-----------+----+-----------+
+		| pgdb01 | 192.168.56.108 | Replica | streaming |  9 |         0 |
+		| pgdb02 | 192.168.56.107 | Replica | streaming |  9 |         0 |
+		| pgdb03 | 192.168.56.109 | Leader  | running   |  9 |           |
+		+--------+----------------+---------+-----------+----+-----------+

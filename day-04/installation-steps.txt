@@ -239,3 +239,13 @@ root
 	systemctl enable patroni.service
 	systemctl start patroni.service
 	systemctl status patroni.service
+	
+	
+	
+	
+	
+patronictl list
+
+
+
+patronictl switchover pg16-lkd
