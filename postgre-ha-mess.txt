@@ -1,0 +1,165 @@
+%include /etc/pgbouncer/databases.ini
+
+[pgbouncer]
+listen_addr = 0.0.0.0
+listen_port = 5432
+
+# unix_socket_dir = /var/run/pgbouncer
+
+auth_type = scram-sha-256
+auth_file = /etc/pgbouncer/userlist.txt
+admin_users = postgres
+stats_users = zabbix,pgbouncer,newrelic,prometheus
+pool_mode = transaction
+server_reset_query = DISCARD ALL
+
+ignore_startup_parameters = extra_float_digits
+server_check_delay = 5
+server_fast_close = 1
+application_name_add_host = 0
+max_client_conn = 20000
+default_pool_size = 300
+min_pool_size = 20
+reserve_pool_size = 200
+reserve_pool_timeout = 2
+log_connections = 1
+log_disconnections = 1
+log_pooler_errors = 1
+verbose = 0
+server_lifetime = 1200
+server_idle_timeout = 240
+log_stats = 1
+stats_period = 60
+logfile = /var/log/postgresql/pgbouncer.log
+pidfile = /var/run/postgresql/pgbouncer.pid
+
+
+[databases]
+lkd = host=localhost dbname=lkd port=5433
+lkd_readonly = host=localhost dbname=lkd port=5434
+
+lkd2 = host=localhost dbname=lkd2 port=5433
+lkd2_readonly = host=localhost dbname=lkd2 port=5434
+
+
+
+
+-- Create roles
+CREATE ROLE lkddb NOLOGIN NOINHERIT;
+
+-- Create users and assign roles
+CREATE ROLE lkddb_owner LOGIN PASSWORD '1234' IN ROLE lkddb;
+CREATE ROLE lkddb_app_group NOLOGIN IN ROLE lkddb;
+CREATE ROLE lkddb_developer_group NOLOGIN IN ROLE lkddb;
+CREATE ROLE lkddb_readonly_group NOLOGIN IN ROLE lkddb;
+
+-- Create database
+CREATE DATABASE lkddb 
+    TEMPLATE = template0 
+    ENCODING = 'UTF8' 
+    OWNER = lkddb_owner;
+
+-- Grant permissions on database
+GRANT CONNECT, TEMP ON DATABASE lkddb TO lkddb_owner;
+REVOKE CONNECT, TEMP ON DATABASE lkddb FROM PUBLIC;
+
+-- Connect to the new database
+\c lkddb
+
+-- Arrange permissions
+ALTER SCHEMA public OWNER TO lkddb_owner;
+REVOKE CREATE, USAGE ON SCHEMA public FROM PUBLIC;
+GRANT USAGE ON SCHEMA public TO lkddb_owner;
+
+-- Create Default readonly Privileges for the 'lkddb_owner' role
+ALTER DEFAULT PRIVILEGES FOR ROLE lkddb_owner
+    GRANT SELECT ON TABLES TO lkddb_readonly_group;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE lkddb_owner
+    GRANT USAGE ON TYPES TO lkddb_readonly_group;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE lkddb_owner
+    GRANT USAGE ON SCHEMAS TO lkddb_readonly_group;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE lkddb_owner
+    GRANT SELECT ON SEQUENCES TO lkddb_readonly_group;
+
+-- Grant Privileges on existing relations
+-- Grant privileges on tables
+GRANT SELECT, INSERT, UPDATE, DELETE
+    ON ALL TABLES IN SCHEMA public
+    TO lkddb_app_group, lkddb_developer_group;
+
+-- Grant privileges on sequences
+GRANT SELECT, UPDATE
+    ON ALL SEQUENCES IN SCHEMA public
+    TO lkddb_app_group, lkddb_developer_group;
+
+-- Grant execute on functions
+GRANT EXECUTE
+    ON ALL FUNCTIONS IN SCHEMA public
+    TO lkddb_app_group, lkddb_developer_group;
+
+-- Grant usage on schema
+GRANT USAGE
+    ON SCHEMA public
+    TO lkddb_app_group, lkddb_developer_group;
+
+-- Grant privileges to 'lkddb_readonly_group'
+GRANT SELECT
+    ON ALL TABLES IN SCHEMA public
+    TO lkddb_readonly_group;
+
+GRANT SELECT
+    ON ALL SEQUENCES IN SCHEMA public
+    TO lkddb_readonly_group;
+
+GRANT EXECUTE
+    ON ALL FUNCTIONS IN SCHEMA public
+    TO lkddb_readonly_group;
+
+GRANT USAGE
+    ON SCHEMA public
+    TO lkddb_readonly_group;
+
+
+
+
+
+vim /etc/apt/apt.conf.d/99force-ipv4
+Acquire::ForceIPv4 "true";
+
+
+
+
+
+
+
+vrrp_script chk_script {
+    script "/usr/bin/killall -0 pgbouncer haproxy"
+    interval 2
+    weight 2
+}
+vrrp_instance VI_1 {
+    interface ens192
+    state MASTER 
+    virtual_router_id 51 
+    priority 100
+    
+    virtual_ipaddress {
+        192.168.56.150
+    }
+    authentication {
+        auth_type PASS 
+        auth pass qbDCrSZU
+    }
+    track script {
+        chk script
+    }
+}    
+
+
+
+
+
+

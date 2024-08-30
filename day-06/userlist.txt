@@ -1,0 +1,4 @@
+"lkddb_app_user"                                      "SCRAM-SHA-256$4096:9TUvSE4ecIjyMjg594D7ww==$rCU+t51mGNVEJ4P4Mg3Ef/WVmJphn+XpvU3WkqZyLpA=:Pk+5vBsPZImg6ooya1Ux9nGvgrpLBvAPLshjbrS/grg="
+"lkddb_dev_user"                                      "SCRAM-SHA-256$4096:A7z74nrgWoTofdVjUWytFg==$6gqgwUwAaigLhXSFLkTUKJmLF8WRm3KBR6Ip6pm3Blw=:GLvDk16//cCiPKUflsAxTkWnLeZZpAMSawoFsmMH6Co="
+"lkddb_owner"                                         "SCRAM-SHA-256$4096:mGZxQ+MBCnsxGWdkGFbY3A==$a3dZQFCYN93amvcP8Hsx/H+fA3gfD6Bj6tgJOS/oHOI=:hd+HNvC5RUnNTF2EWrhYbeWEgJ/AuiBSPYvPH+2khao="
+"lkddb_readonly_user"                                 "SCRAM-SHA-256$4096:tECFgLo14corONrBm1lGCQ==$F5BAP588UBeAbxqXzcEMmPWXybupyuIiAdbt6WPOH5I=:TyHgwitpfHLDwst5BDZ5KpxDppAOl5qo4QnC0em7ozc="
