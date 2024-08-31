@@ -1,0 +1,12 @@
+pgbench -i lkddb
+
+
+-----------------------------------------------------------------------------
+
+pgbench -c 10 -j 2 -T 120 --host=192.168.56.150 --username=lkddb_owner --port=5433 lkddb
+
+
+--------------------------------------------------------------------------
+
+
+pgbench --client=32 --jobs=4 --progress=1 --time=300 --host=192.168.56.150 --username=lkddb_owner --port=5432 lkddb

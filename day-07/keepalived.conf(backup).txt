@@ -1,0 +1,23 @@
+vrrp_script chk_script {
+  script "/usr/bin/killall -0 pgbouncer haproxy"
+  interval 2
+  weight 2
+}
+
+vrrp_instance VI_1 {
+  interface enp0s3
+  state BACKUP
+  virtual_router_id 52
+  priority 100
+      
+  virtual_ipaddress {
+    192.168.56.150
+  }
+  authentication {
+    auth_type PASS
+    auth_pass qbDCrSZU
+  }
+  track_script {
+    chk_script
+  }
+}

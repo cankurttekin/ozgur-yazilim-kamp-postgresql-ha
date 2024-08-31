@@ -1,0 +1,78 @@
+postgres
+	pgbackup
+		pgbackrest --stanza=pg16_lkd stanza-create  #stanza oluşturmak için gerekli komut.
+		pgbackrest info #mevcut stanzaların durumlarını kontrol etmek için gerekli komut.Backuplar ilk/son wal dosyaları hangi tarihler için restore yapabilirim gibi bilgileri buradan kontrol ediyoruz.
+
+
+
+
+
+--restore command (restore işleminin yapılacağı sunucuda çalıştırılır.)
+postgres
+		pgbackrest \
+		--stanza=pg16_lkd \
+		--log-level-console=info \
+		--db-path=/pg_data/16/lkd_restore \
+		--type=time \
+		--target="2024-08-26 16:50:20.000000+00" \
+		--target-action=pause restore
+
+
+--backup üzerinden replika kaldırmak için gerekli restore command
+postgres
+	/usr/bin/pgbackrest --stanza=pg16_lkd --type=standby restore
+	
+
+--backup dosyası yetkileri ve sahipliği
+root@pgbackup:~# chown postgres: /pg_backup/
+root@pgbackup:~# chmod 700 /pg_backup
+
+
+-- Archive command 
+/usr/bin/pgbackrest --stanza=pg16_lkddb archive-push %p
+
+-------------------------------------------------------
+
+-- pgbackrest ile db-include kullanarak 1 veritabanını restore etme.
+
+pgbackrest \
+--stanza=pg16_lkddb \
+--log-level-console=info \
+--db-path=/pg_data/16/restore \
+--type=time \
+--db-include=lkddb \
+--target="2024-08-30 16:33:00.000000+03" \
+--target-action=pause restore 
+
+------------------------------------------------------
+
+-- pg_dump ile bir tablo/şema/veritabanı için dump alma komutu
+(burada tablo dump'ı var.)
+
+pg_dump \
+--host=192.168.56.108 \
+--port=5433 \
+--dbname=lkddb \
+--username=lkddb_owner \
+--table=public.pgbench_accounts \
+--verbose \
+--no-privileges \
+--no-owner \
+--format=custom \
+--file=/pg_data/16/dumps/20240830_lkddb.dump \
+> /pg_data/16/dumps/20240830_lkddb.dump.log 2>&1
+
+--------------------------------------------------------------------
+
+-- pg_dump ile aldığımız tablo/şema/veritabanı için pg_restore komutu örneği (burada tablo restore işlemi yapıyoruz.)
+
+
+pg_restore \
+--dbname=lkddb \
+--single-transaction \
+--no-owner \
+--no-privileges \
+--exit-on-error \
+--role=lkddb_owner \
+/pg_data/16/dumps/20240830_lkddb.dump \
+> /pg_data/16/dumps/20240830_lkddb.dump.restore.log 2>&1

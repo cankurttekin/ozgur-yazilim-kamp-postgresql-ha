@@ -1,0 +1,87 @@
+--local
+
+┌── 2024-08-30 11:24:45 postgres@pgdb02 ── ~ ─
+ └─$ pgbench -c 10 -j 2 -T 120 lkddb
+pgbench (16.4 (Debian 16.4-1.pgdg120+1))
+starting vacuum...end.
+transaction type: <builtin: TPC-B (sort of)>
+scaling factor: 1
+query mode: simple
+number of clients: 10
+number of threads: 2
+maximum number of tries: 1
+duration: 120 s
+number of transactions actually processed: 67374
+number of failed transactions: 0 (0.000%)
+latency average = 17.815 ms
+initial connection time = 23.972 ms
+tps = 561.318689 (without initial connection time)
+
+
+------------------------------------------------------------------
+
+--haproxy
+
+
+ ┌── 2024-08-30 11:17:27 postgres@pgdb03 ── ~ ─
+ └─$ pgbench -c 10 -j 2 -T 120 --host=192.168.56.111 --username=lkddb_owner --port=5433 lkddb
+Password:
+pgbench (16.4 (Debian 16.4-1.pgdg120+1))
+starting vacuum...end.
+transaction type: <builtin: TPC-B (sort of)>
+scaling factor: 1
+query mode: simple
+number of clients: 10
+number of threads: 2
+maximum number of tries: 1
+duration: 120 s
+number of transactions actually processed: 32227
+number of failed transactions: 0 (0.000%)
+latency average = 37.207 ms
+initial connection time = 136.693 ms
+tps = 268.768042 (without initial connection time)
+
+----------------------------------------------------------------
+
+--pgbouncer
+
+┌── 2024-08-30 11:36:25 postgres@pgdb03 ── ~ ─
+ └─$ pgbench -c 10 -j 2 -T 120 --host=192.168.56.111 --username=lkddb_owner --port=5432 lkddb
+Password:
+pgbench (16.4 (Debian 16.4-1.pgdg120+1))
+starting vacuum...end.
+transaction type: <builtin: TPC-B (sort of)>
+scaling factor: 1
+query mode: simple
+number of clients: 10
+number of threads: 2
+maximum number of tries: 1
+duration: 120 s
+number of transactions actually processed: 29732
+number of failed transactions: 0 (0.000%)
+latency average = 40.338 ms
+initial connection time = 99.916 ms
+tps = 247.906486 (without initial connection time)
+
+
+----------------------------------
+
+VIP
+
+ ┌── 2024-08-30 11:38:51 postgres@pgdb03 ── ~ ─
+ └─$ pgbench -c 10 -j 2 -T 120 --host=192.168.56.150 --username=lkddb_owner --port=5432 lkddb
+Password:
+pgbench (16.4 (Debian 16.4-1.pgdg120+1))
+starting vacuum...end.
+transaction type: <builtin: TPC-B (sort of)>
+scaling factor: 1
+query mode: simple
+number of clients: 10
+number of threads: 2
+maximum number of tries: 1
+duration: 120 s
+number of transactions actually processed: 30882
+number of failed transactions: 0 (0.000%)
+latency average = 38.837 ms
+initial connection time = 96.817 ms
+tps = 257.484671 (without initial connection time)
