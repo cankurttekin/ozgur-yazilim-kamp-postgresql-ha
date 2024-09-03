@@ -1,0 +1,169 @@
+test sunucuları:
+
+192.168.56.107
+192.168.56.108
+192.168.56.109
+192.168.56.110
+192.168.56.111
+192.168.56.112
+
+
+
+########################## 1. Prometheus Kurulumuu ########################
+
+Adım 1: Prometheus'u İndir ve Yükle
+
+	# Gerekli paketleri yükleyin
+	sudo apt update
+	sudo apt install -y wget tar
+	
+	# Prometheus'u indirin
+	wget https://github.com/prometheus/prometheus/releases/download/v2.41.0/prometheus-2.41.0.linux-amd64.tar.gz
+	
+	# Arşivi açın
+	tar -xvf prometheus-2.41.0.linux-amd64.tar.gz
+	
+	# Prometheus dosyalarını uygun bir dizine taşıyın
+	sudo mv prometheus-2.41.0.linux-amd64 /usr/local/bin/prometheus
+	
+	# Dizine gidin
+	cd /usr/local/bin/prometheus
+
+
+Adım 2: Prometheus Yapılandırması
+
+Prometheus yapılandırma dosyasını oluşturun (prometheus.yml):
+
+vim /usr/local/bin/prometheus/prometheus.yml
+ 
+# my global config
+global:
+  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+          # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: "prometheus"
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: 'postgresql-exporter'
+    static_configs:
+      - targets:
+        - '192.168.56.107:9187'
+        - '192.168.56.108:9187'
+        - '192.168.56.109:9187'
+
+
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets:
+        - '192.168.56.107:9100'
+        - '192.168.56.108:9100'
+        - '192.168.56.109:9100'
+        - '192.168.56.110:9100'
+        - '192.168.56.111:9100'
+        - '192.168.56.112:9100'
+
+
+
+
+curl  --get -u prometheus:123456 http://192.168.182.131:8091/prometheus_sd_config  > /etc/prometheus/couchbase_nodes.json
+
+chown prometheus: /etc/couchbase_nodes.json
+
+Adım 3: Prometheus Servis Dosyasını Oluşturun
+
+
+vim /etc/systemd/system/prometheus.service
+
+	[Unit]
+	Description=Prometheus
+	Wants=network-online.target
+	After=network-online.target
+	
+	[Service]
+	User=prometheus
+	ExecStart=/usr/local/bin/prometheus/prometheus --config.file=/usr/local/bin/prometheus/prometheus.yml --storage.tsdb.path=/usr/local/bin/prometheus/data
+	
+	[Install]
+	WantedBy=default.target
+
+
+
+Adım 4: Prometheus Kullanıcısını Oluşturun ve İzinleri Ayarlayın
+
+	# prometheus kullanıcısını oluşturun
+	sudo useradd --no-create-home --shell /bin/false prometheus
+	
+	# İzinleri ayarlayın
+	sudo chown -R prometheus:prometheus /usr/local/bin/prometheus
+
+
+Adım 5: Prometheus'u Başlatın ve Servis Olarak Çalıştırın
+
+	sudo systemctl daemon-reload
+	sudo systemctl start prometheus
+	sudo systemctl enable prometheus
+
+
+########################## 2. Grafana Kurulumu ########################
+
+
+Adım 1: Grafana'yı İndir ve Yükle
+
+	# Grafana'nın GPG anahtarını ekleyin
+	wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
+	
+	# APT deposunu ekleyin
+	sudo add-apt-repository "deb https://packages.grafana.com/oss/deb stable main"
+	
+	# Grafana'yı yükleyin
+	sudo apt update
+	sudo apt install -y grafana
+
+
+Adım 2: Grafana'yı Başlatın ve Servis Olarak Çalıştırın
+
+	sudo systemctl start grafana-server
+	sudo systemctl enable grafana-server
+	sudo systemctl status grafana-server
+
+
+########################## 3. Prometheus ve Grafana Arasında Bağlantı Kurulumu ########################
+
+
+Adım 1: Grafana Web Arayüzüne Giriş Yapın
+
+	Tarayıcınızı açın ve Grafana'nın çalıştığı sunucunun IP adresini veya localhost'u kullanarak http://<sunucu_ip>:3000 adresine gidin.
+	Varsayılan kullanıcı adı ve parolası admin / admin'dir.
+
+
+Adım 2: Prometheus Veri Kaynağını Ekleyin
+
+	Grafana'da oturum açtıktan sonra sol menüden "Connections" -> "Add new connection" bölümüne gidin.
+	Prometheus'u seçin ve aşağıdaki gibi yapılandırın:
+	"Add new data source" butonuna tıklayın.
+	URL: http://localhost:9090
+	"Save & Test" butonuna tıklayarak bağlantıyı test edin.
+	
+	
+Bu adımları tamamladıktan sonra, Prometheus ve Grafana'yı kullanarak sunucunuzu izlemeye başlayabilirsiniz.
+Grafana'da çeşitli panolar (dashboard) oluşturarak Prometheus verilerini görselleştirebilirsiniz.
